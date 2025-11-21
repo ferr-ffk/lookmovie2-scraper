@@ -19,6 +19,7 @@ from util import *
 from urllib.parse import urlparse
 import logging
 from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.common.exceptions import ElementClickInterceptedException
 
 
 def check_if_ad_button_exists(driver):
@@ -30,7 +31,6 @@ def check_if_ad_button_exists(driver):
         return True
     except:
         return False
-
 
 
 def close_ad_button_if_exists(driver):
@@ -223,6 +223,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
 
     driver.quit()
 
+
 def open_seasons_episodes_tabs(driver, open_episodes_tab=True, open_seasons_tab=True):
     seasons_switcher = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.CLASS_NAME, "seasons-switcher"))
@@ -232,17 +233,42 @@ def open_seasons_episodes_tabs(driver, open_episodes_tab=True, open_seasons_tab=
         EC.element_to_be_clickable((By.CLASS_NAME, "episodes-switcher"))
     )
 
-    # Clica nas duas tabs para expandir a lista
-    if open_episodes_tab:
-        episodes_switcher.click()
-    
+    try:
+        # Clica nas duas tabs para expandir a lista
+        if open_episodes_tab:
+            episodes_switcher.click()
 
-    if open_seasons_tab:
-        seasons_switcher.click()
+        if open_seasons_tab:
+            seasons_switcher.click()
+    except ElementClickInterceptedException as e:
+        print_status("Click interceptado ao expandir abas de episódios e temporadas! Tentando de novo...", Fore.RED)
+
+        send_status_email("Click interceptado!", "Click interceptado ao expandir abas de episodios e temporadas! Tentando de novo...")
+
+        close_ad_button_if_exists(driver)
+
+        # Clica nas duas tabs para expandir a lista
+        if open_episodes_tab:
+            episodes_switcher.click()
+
+        if open_seasons_tab:
+            seasons_switcher.click()
 
     return
 
 
 if __name__ == "__main__":
     LOGGER.setLevel(logging.ERROR)
-    get_episode_links("https://www.lookmovie2.to/shows/play/1691062710-adventure-time-2010#S1-E1-228866", "adventure-time-episodes.txt")
+
+    try:
+        episodes_filename = "gumball-episodes.txt"
+
+        send_status_email("Iniciando scraper de 'get-video-links'...", f"Os episodios serao salvos em {episodes_filename}.")
+
+        get_episode_links("https://www.lookmovie2.to/shows/play/1691699568-the-amazing-world-of-gumball-2011#S1-E1-117113", episodes_filename)
+
+        send_status_email("Lista de Episodios salvos!", f"Lista de episodios salvos em \'{episodes_filename}\'.")
+    except Exception as e:
+        print_status(f"Erro inesperado: {e}", Fore.RED)
+
+        send_status_email("Erro inesperado ao obter link dos episodios!", f"Erro inesperado: {e}")

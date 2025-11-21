@@ -230,6 +230,8 @@ def main():
 
     print_status("Scraper finalizado!", Fore.GREEN)
 
+    send_status_email("Scraper finalizado!", f"{str(len(episodes_url))} episodios baixados.")
+
     driver.quit()
 
 if __name__ == "__main__":
@@ -237,4 +239,8 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print_status("Interrompido pelo usuário!", Fore.RED)
+    except Exception as e:
+        print_status(f"Erro desconhecido: {e}", Fore.RED)
+
+        send_status_email("Erro desconhecido ao baixar episodios...", f"Erro desconhecido: {e}")
 
