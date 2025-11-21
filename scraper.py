@@ -133,7 +133,9 @@ def download_episode_from_url(url, driver):
 
     download_m3u8_from_url(url=url, filename=filename)
 
-    print_status(f"Episódio {filename} baixado com sucesso!", Fore.GREEN)
+    print_status(f"Episódio {str(filename)} baixado com sucesso!", Fore.GREEN)
+
+    send_status_email(f"Baixou {filename}", f"Episodio {filename} baixado com sucesso!")
 
 
 def get_m3u8_url(driver):
@@ -185,6 +187,17 @@ def download_episodes(episodes_url, driver):
     for url in episodes_url:
         download_episode_from_url(url, driver)
 
+        episode_name = get_filename_from_url(url)
+
+        executar_tarefa_com_alerta(
+            download_episode_from_url,
+            f"Baixar episodio: {episode_name}",
+            max_retries=3,
+            retry_delay_sec=5,
+            url=url,
+            driver=driver
+        )
+
         close_all_tabs_except_current(driver)
 
 def main():
@@ -205,9 +218,11 @@ def main():
 
     episodes_url = get_episode_links('missing-adventure-time-episodes.txt')
 
-    print_status(f"{len(episodes_url)} episódios encontrados!", Fore.GREEN)
+    print_status(f"{len(episodes_url)} episodios encontrados!", Fore.GREEN)
 
     print_status("Iniciando download...", Fore.YELLOW)
+
+    send_status_email("Iniciando scraper!", f"{str(len(episodes_url))} episodios encontrados!")
 
     driver.minimize_window()
 

@@ -39,8 +39,6 @@ def send_status_email(title: str, message: str):
         print_status(f"ERRO SMTP: Ocorreu um erro ao se comunicar com o servidor de e-mail. Detalhes: {e}", Fore.RED)
     except Exception as e:
         print_status(f"ERRO DESCONHECIDO: Não foi possível enviar o e-mail. {e}", Fore.RED)   
-    finally:
-        server.quit()
 
 
 def executar_tarefa_com_alerta(
@@ -80,7 +78,7 @@ def executar_tarefa_com_alerta(
                 # 3. Se não for a última tentativa: Alerta de Retentativa (Prioridade baixa/normal)
                 send_status_email(
                     title=f"⚠️ Falha Temporária: {task_name}",
-                    message=f"Erro: {type(e).__name__}. Tentando novamente em {retry_delay_sec}s...",
+                    message=f"Erro: {e}. \n\n Tentando novamente em {retry_delay_sec}s...",
                 )
                 time.sleep(retry_delay_sec)
             else:
