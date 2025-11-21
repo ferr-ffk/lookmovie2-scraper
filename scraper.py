@@ -233,4 +233,8 @@ def main():
     driver.quit()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print_status("Interrompido pelo usuário!", Fore.RED)
+

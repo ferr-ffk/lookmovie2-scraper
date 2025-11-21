@@ -244,5 +244,5 @@ def open_seasons_episodes_tabs(driver, open_episodes_tab=True, open_seasons_tab=
 
 
 if __name__ == "__main__":
-    LOGGER.setLevel(logging.WARNING)
+    LOGGER.setLevel(logging.ERROR)
     get_episode_links("https://www.lookmovie2.to/shows/play/1691062710-adventure-time-2010#S1-E1-228866", "adventure-time-episodes.txt")

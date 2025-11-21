@@ -63,10 +63,11 @@ def executar_tarefa_com_alerta(
             resultado = func(*args, **kwargs)
             
             # 2. Se for bem-sucedido: Alerta de Sucesso (Prioridade normal)
-            send_status_email(
-                title=f"✅ SUCESSO: {task_name}",
-                message=f"A tarefa foi concluída com sucesso na tentativa {attempt + 1}. ",
-            )
+            # send_status_email(
+            #     title=f"SUCESSO: {task_name}",
+            #     message=f"A tarefa foi concluída com sucesso na tentativa {attempt + 1}. ",
+            # )
+
             print_status(f"[SUCESSO] Tarefa '{task_name}' concluída.", Fore.GREEN)
             return resultado
 
@@ -77,14 +78,14 @@ def executar_tarefa_com_alerta(
             if attempt < max_retries - 1:
                 # 3. Se não for a última tentativa: Alerta de Retentativa (Prioridade baixa/normal)
                 send_status_email(
-                    title=f"⚠️ Falha Temporária: {task_name}",
+                    title=f"Falha Temporária: {task_name}",
                     message=f"Erro: {e}. \n\n Tentando novamente em {retry_delay_sec}s...",
                 )
                 time.sleep(retry_delay_sec)
             else:
                 # 4. Se for a última tentativa: Alerta Crítico (Prioridade alta)
                 send_status_email(
-                    title=f"❌ FALHA CRÍTICA: {task_name}",
+                    title=f"FALHA CRÍTICA: {task_name}",
                     message=f"A tarefa falhou permanentemente após {max_retries} tentativas. Erro final: {type(e).__name__} - {e}",
                 )
                 
