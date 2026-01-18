@@ -29,17 +29,24 @@ driver.implicitly_wait(10)
 
 driver.get("https://www.lookmovie2.to/shows/play/1701831559-smiling-friends-2020#S1-E1-159353")
 
-while True:
-    close_ad_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.CLASS_NAME, "pre-init-ads--close"))
-    )
+def close_ad_button_if_exists(driver):
+    try:
+        close_ad_button = WebDriverWait(driver, 12).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "pre-init-ads--close"))
+        )
 
-    if close_ad_button:
-        close_ad_button.click()
+        close_ad_button.click()    
+    except:
+        print("Click interceptado....", Fore.RED)
 
-        break
+        close_ad_button_if_exists(driver)
 
-m3u8_url = ''
+        raise Exception("Não foi possível encontrar o botão de fechar anúncio!")
+    
+
+close_ad_button_if_exists(driver)
+
+m3u8_urls = []
 
 time.sleep(5)
 
@@ -66,6 +73,12 @@ for entry in driver.get_log('performance'):
         url = log_message.get("params", {}).get("request", {}).get("url")
 
     if url and '.m3u8' in url:
-        download_m3u8_from_url(url)
-        driver.quit()
+        m3u8_urls.append(url)
+    
+
+print(m3u8_urls)
+
+if url and '.m3u8' in url:
+    # download_m3u8_from_url(url)
+    driver.quit()
 

@@ -98,6 +98,8 @@ def get_filename_from_url(url):
         
         if show_name and episode_identifier:
             return f"{show_name}-{episode_identifier}"
+        else:
+            return show_name
     except (IndexError, AttributeError):
         pass
     return None
@@ -114,8 +116,8 @@ def download_episode_from_url(url, driver):
 
     if not filename:
         print_status(f"Não foi possível extrair o nome do episódio da URL: {url}", Fore.RED)
-        return
-    
+        filename = url.split('/')[-1]
+
     print_status(f"Baixando episódio \"{filename}\"", Fore.BLUE)
 
     print_status("Fechando anúncio...", Fore.YELLOW)
@@ -166,11 +168,16 @@ def get_m3u8_url(driver):
 
 def download_m3u8_from_url(url, filename, base_folder = "D:\\Downloads\\"):
     try:
-        ffmpeg.input(url).output(base_folder + filename + '.mp4', vcodec='libx264', acodec='aac', preset="slow").overwrite_output().run()
+        ffmpeg.input(url, bsf="aac_adtstoasc").output(
+            base_folder + filename + '.mp4', 
+            c="copy",
+            map=['0:0', '0:1'],  # Explicitly select Video & Audio, ignore Data (0:2)
+            bsf='a:aac_adtstoasc' # Ensures audio compatibility with MP4
+        ).overwrite_output().run()
     except Exception as e:
         print_status(f"Erro na conversão do FFMPEG: {e} Tentando de novo...", Fore.RED)
 
-        ffmpeg.input(url).output(base_folder + filename + '.mp4', vcodec='libx264', acodec='aac', preset="slow").overwrite_output().run()
+        ffmpeg.input(url).output(base_folder + filename + '.mp4', vcodec='copy', acodec='copy').overwrite_output().run()
 
 
 def close_all_tabs_except_current(driver):
@@ -185,8 +192,6 @@ def close_all_tabs_except_current(driver):
 
 def download_episodes(episodes_url, driver):
     for url in episodes_url:
-        download_episode_from_url(url, driver)
-
         episode_name = get_filename_from_url(url)
 
         executar_tarefa_com_alerta(
@@ -216,9 +221,17 @@ def main():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
 
-    episodes_url = get_episode_links('missing-adventure-time-episodes.txt')
+    episodes_url = get_episode_links('movies.txt')
 
-    print_status(f"{len(episodes_url)} episodios encontrados!", Fore.GREEN)
+    episodes = ""
+
+    for episode_url in episodes_url:
+        episode_filename = get_filename_from_url(episode_url)
+
+        episodes += episode_filename + ", "
+
+    print_status(f"{len(episodes_url)} episodios encontrados:", Fore.GREEN)
+    print(episodes)
 
     print_status("Iniciando download...", Fore.YELLOW)
 

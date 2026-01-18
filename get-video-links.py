@@ -74,7 +74,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
     # options.add_argument('--start-maximized') # Run in maximized mode for no UI
     options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(5)
 
     print_status("Abrindo página inicial...", Fore.BLUE)
 
@@ -261,11 +261,11 @@ if __name__ == "__main__":
     LOGGER.setLevel(logging.ERROR)
 
     try:
-        episodes_filename = "gumball-episodes.txt"
+        episodes_filename = "smiling-friends-episodes.txt"
 
         send_status_email("Iniciando scraper de 'get-video-links'...", f"Os episodios serao salvos em {episodes_filename}.")
 
-        get_episode_links("https://www.lookmovie2.to/shows/play/1691699568-the-amazing-world-of-gumball-2011#S1-E1-117113", episodes_filename)
+        get_episode_links("https://www.lookmovie2.to/shows/play/1701831559-smiling-friends-2020#S1-E1-159353", episodes_filename)
 
         send_status_email("Lista de Episodios salvos!", f"Lista de episodios salvos em \'{episodes_filename}\'.")
     except Exception as e:
