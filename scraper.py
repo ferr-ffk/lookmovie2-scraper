@@ -205,7 +205,7 @@ def download_episodes(episodes_url, driver):
 
         close_all_tabs_except_current(driver)
 
-def main():
+def main(episodes_filename: str):
     print_status("Iniciando Scraper...", Fore.GREEN)
 
     print_status("Definindo Configurações...", Fore.YELLOW)
@@ -221,7 +221,7 @@ def main():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
 
-    episodes_url = get_episode_links('movies.txt')
+    episodes_url = get_episode_links(episodes_filename)
 
     episodes = ""
 
@@ -249,7 +249,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        main("remaining-smiling-friends.txt")
     except KeyboardInterrupt:
         print_status("Interrompido pelo usuário!", Fore.RED)
     except Exception as e:
