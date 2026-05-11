@@ -1,0 +1,18 @@
+[project]
+name = "lookmovie2-scraper"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Fernando Freitas",email = "126774900+ferr-ffk@users.noreply.github.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "selenium (>=4.43.0,<5.0.0)",
+    "dotenv (>=0.9.9,<0.10.0)",
+    "ffmpeg (>=1.4,<2.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
