@@ -3,7 +3,6 @@ import smtplib
 from typing import Any, Callable
 from colorama import Fore, Style
 from dotenv import dotenv_values, load_dotenv
-import win32com.client as comclt
 import time
 
 load_dotenv()
@@ -107,22 +106,6 @@ def print_status(message, status=Fore.GREEN):
         symbol = "ℹ️ " + " "
 
     print(f"{symbol}{status}{message}{Style.RESET_ALL}")
-
-
-def press_key(key, n=1):
-    wsh = comclt.Dispatch("WScript.Shell")
-
-    for _ in range(n):
-        wsh.SendKeys(key)
-
-
-def send_keys(text, delay=0):
-    wsh = comclt.Dispatch("WScript.Shell")
-
-    for char in text:
-        wsh.SendKeys(char)  # 0 means no delay between keystrokes
-        
-        time.sleep(delay)  # Optional delay between characters
 
 
 if __name__ == "__main__":

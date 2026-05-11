@@ -1,18 +1,13 @@
-from colorama import Fore, Back, Style
-from dotenv import load_dotenv
+import sys
+from colorama import Fore, Style
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.support.wait import WebDriverWait
-import win32com.client as comclt
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import json
-import os
 import ffmpeg
-import smtplib
 import time
 from util import *
 from urllib.parse import urlparse
@@ -23,13 +18,13 @@ def print_status(message, status=Fore.GREEN):
     symbol = ""
     
     if status == Fore.GREEN:
-        symbol = "✅ "
+        symbol = "[✓]" + " "
     elif status == Fore.RED:
-        symbol = "❌ " + " "
+        symbol = "[X]" + " "
     elif status == Fore.YELLOW:
-        symbol = "⚠️ " + " "
+        symbol = "⚠" + " "
     else:
-        symbol = "ℹ️ " + " "
+        symbol = "[i] " + " "
 
     print(f"{symbol}{status}{message}{Style.RESET_ALL}")
 
@@ -41,6 +36,10 @@ def close_ad_button_if_exists(driver):
         )
 
         close_ad_button.click()    
+    except KeyboardInterrupt:
+        print_status("Interrompido pelo usuário!", Fore.RED)
+
+        raise Exception("Processo interrompido pelo usuário!")
     except:
         print_status("Click interceptado....", Fore.RED)
 
@@ -91,6 +90,9 @@ def get_filename_from_url(url):
         str: A clean filename or None if the format is incorrect.
     """
     try:
+        if url.find("lookmovie2") == -1:
+            return url.replace("https://", "").replace("http://", "").replace("/", "_").strip('-')
+
         parsed_url = urlparse(url)
         show_info = parsed_url.path.strip('/').split('/')[-1]
         show_name = '-'.join(show_info.split('-')[1:-1])
@@ -101,8 +103,7 @@ def get_filename_from_url(url):
         else:
             return show_name
     except (IndexError, AttributeError):
-        pass
-    return None
+        return url  # Fallback to last part of URL if parsing fails
 
 
 def download_episode_from_url(url, driver):
@@ -205,33 +206,23 @@ def download_episodes(episodes_url, driver):
 
         close_all_tabs_except_current(driver)
 
-def main(episodes_filename: str):
+def main(episodes_url: str, output_folder: str = "."):
     print_status("Iniciando Scraper...", Fore.GREEN)
 
     print_status("Definindo Configurações...", Fore.YELLOW)
 
-    options = webdriver.ChromeOptions()
+    options = webdriver.FirefoxOptions()
 
     options.add_argument("--mute-audio")
-    # options.add_argument('--headless') # Run in headless mode for no UI
-    # options.add_argument('--start-maximized') # Run in maximized mode for no UI
+    options.add_argument('--headless') # Run in headless mode for no UI
+    options.add_argument('--start-maximized') # Run in maximized mode for no UI
 
     options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Firefox(options=options)
     driver.implicitly_wait(10)
 
-    episodes_url = get_episode_links(episodes_filename)
-
-    episodes = ""
-
-    for episode_url in episodes_url:
-        episode_filename = get_filename_from_url(episode_url)
-
-        episodes += episode_filename + ", "
-
     print_status(f"{len(episodes_url)} episodios encontrados:", Fore.GREEN)
-    print(episodes)
 
     print_status("Iniciando download...", Fore.YELLOW)
 
@@ -248,12 +239,30 @@ def main(episodes_filename: str):
     driver.quit()
 
 if __name__ == "__main__":
+    episodes_links_txt = ""
+    output_folder = ""
+
+    if len(sys.argv) < 3:
+        print("Usage: python [link || links.txt] [output_folder]")
+        sys.exit(1)
+
+    if sys.argv[1] and sys.argv[2]:
+        if sys.argv[1].find(".txt") == -1:
+            print_status(f"Link direto detectado: {sys.argv[1]}", Fore.YELLOW)
+            
+            episodes_url = [sys.argv[1]]
+        else:
+            episodes_links_txt = sys.argv[1]
+            episodes_url = get_episode_links(episodes_links_txt)
+
+        output_folder = sys.argv[2]
+
     try:
-        main("remaining-smiling-friends.txt")
+        main(episodes_url, output_folder)
     except KeyboardInterrupt:
         print_status("Interrompido pelo usuário!", Fore.RED)
     except Exception as e:
         print_status(f"Erro desconhecido: {e}", Fore.RED)
 
-        send_status_email("Erro desconhecido ao baixar episodios...", f"Erro desconhecido: {e}")
+        # send_status_email("Erro desconhecido ao baixar episodios...", f"Erro desconhecido: {e}")
 

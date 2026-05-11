@@ -2,21 +2,14 @@
 # Vai na aba de temporadas e vai pegando episódio por episódio
 # Salva os links de cada página no arquivo
 
-from colorama import Fore, Back, Style
+from colorama import Fore
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.support.wait import WebDriverWait
-import win32com.client as comclt
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-import json
-import ffmpeg
-import time
 from util import *
-from urllib.parse import urlparse
 import logging
 from selenium.webdriver.remote.remote_connection import LOGGER
 from selenium.common.exceptions import ElementClickInterceptedException
