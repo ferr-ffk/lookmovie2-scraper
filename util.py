@@ -1,9 +1,11 @@
 import os
 import smtplib
+import sys
 from typing import Any, Callable
 from colorama import Fore, Style
 from dotenv import dotenv_values, load_dotenv
 import time
+from unidecode import unidecode
 
 load_dotenv()
 
@@ -30,12 +32,14 @@ def send_status_email(title: str, message: str):
             server.login(SENDER_EMAIL, PASSWORD)
             
             # Envia o e-mail
-            server.sendmail(SENDER_EMAIL, [RECEIVER_EMAIL], 'Subject: {}\n\n{}'.format(title, message))
+            server.sendmail(SENDER_EMAIL, [RECEIVER_EMAIL], 'Subject: {}\n\n{}'.format(unidecode(title), unidecode(message)))
 
     except smtplib.SMTPAuthenticationError as e:
         print_status(f"ERRO DE AUTENTICAÇÃO: Verifique se a Senha de Aplicativo do Google está correta e se a Verificação em Duas Etapas está ativada. Detalhes: {e}", Fore.RED)
     except smtplib.SMTPException as e:
         print_status(f"ERRO SMTP: Ocorreu um erro ao se comunicar com o servidor de e-mail. Detalhes: {e}", Fore.RED)
+    except KeyboardInterrupt:
+        print_status("Interrompido pelo usuário!", Fore.RED)
     except Exception as e:
         print_status(f"ERRO DESCONHECIDO: Não foi possível enviar o e-mail. {e}", Fore.RED)   
 
@@ -69,7 +73,9 @@ def executar_tarefa_com_alerta(
 
             print_status(f"[SUCESSO] Tarefa '{task_name}' concluída.", Fore.GREEN)
             return resultado
-
+        except KeyboardInterrupt:
+            print_status("Interrompido pelo usuário!", Fore.RED)
+            sys.exit(1)
         except Exception as e:
             # Captura qualquer exceção
             print(f"-> ERRO na Tentativa {attempt + 1}: {type(e).__name__} - {str(e)[:100]}...")
@@ -97,13 +103,13 @@ def print_status(message, status=Fore.GREEN):
     symbol = ""
     
     if status == Fore.GREEN:
-        symbol = "✅ "
+        symbol = "[✓]" + " "
     elif status == Fore.RED:
-        symbol = "❌ " + " "
+        symbol = "[X]" + " "
     elif status == Fore.YELLOW:
-        symbol = "⚠️ " + " "
+        symbol = "[⚠]" + " "
     else:
-        symbol = "ℹ️ " + " "
+        symbol = "[i]" + " "
 
     print(f"{symbol}{status}{message}{Style.RESET_ALL}")
 

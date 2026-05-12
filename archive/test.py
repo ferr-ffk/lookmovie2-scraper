@@ -3,7 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.support.wait import WebDriverWait
-import win32com.client as comclt
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,7 +19,7 @@ options = webdriver.ChromeOptions()
 
 # options.add_argument('--headless') # Run in headless mode for no UI
 
-options.add_argument('--start-maximized') # Run in maximized mode for no UI
+# options.add_argument('--start-maximized') # Run in maximized mode 
 
 options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
@@ -29,6 +28,8 @@ driver.implicitly_wait(10)
 
 driver.get("https://www.lookmovie2.to/shows/play/1701831559-smiling-friends-2020#S1-E1-159353")
 
+print(type(driver))
+
 def close_ad_button_if_exists(driver):
     try:
         close_ad_button = WebDriverWait(driver, 12).until(
@@ -36,6 +37,8 @@ def close_ad_button_if_exists(driver):
         )
 
         close_ad_button.click()    
+    except KeyboardInterrupt:
+        print("Interrompido pelo usuário!", Fore.RED)
     except:
         print("Click interceptado....", Fore.RED)
 

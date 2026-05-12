@@ -6,27 +6,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
+# from selenium.webdriver.firefox.webdriver import WebDriver as FirefoxWebDriver
 import json
 import ffmpeg
 import time
 from util import *
 from urllib.parse import urlparse
 
-
-
-def print_status(message, status=Fore.GREEN):
-    symbol = ""
-    
-    if status == Fore.GREEN:
-        symbol = "[✓]" + " "
-    elif status == Fore.RED:
-        symbol = "[X]" + " "
-    elif status == Fore.YELLOW:
-        symbol = "⚠" + " "
-    else:
-        symbol = "[i] " + " "
-
-    print(f"{symbol}{status}{message}{Style.RESET_ALL}")
 
 
 def close_ad_button_if_exists(driver):
@@ -48,7 +35,7 @@ def close_ad_button_if_exists(driver):
         raise Exception("Não foi possível encontrar o botão de fechar anúncio!")
 
 
-def close_popup_if_exists(driver):
+def close_popup_if_exists(driver: ChromeWebDriver):
     try:
         # Find all elements with the specific class name
         elements_to_hide = driver.find_elements(By.CLASS_NAME, "notifyjs-black_notify-base")
@@ -62,7 +49,7 @@ def close_popup_if_exists(driver):
         return 
 
 
-def pause_video(driver):
+def pause_video(driver: ChromeWebDriver):
     time.sleep(5)
 
     pause_button = WebDriverWait(driver, 5).until(
@@ -106,7 +93,7 @@ def get_filename_from_url(url):
         return url  # Fallback to last part of URL if parsing fails
 
 
-def download_episode_from_url(url, driver):
+def download_episode_from_url(url: str, driver: ChromeWebDriver, output_folder: str = "."):
     print_status("Abrindo página...", Fore.YELLOW)
 
     driver.switch_to.new_window('tab')
@@ -134,14 +121,14 @@ def download_episode_from_url(url, driver):
 
     url = get_m3u8_url(driver)
 
-    download_m3u8_from_url(url=url, filename=filename)
+    download_m3u8_from_url(url=url, filename=output_folder.strip('/').strip('\\') + '\\' + filename)
 
     print_status(f"Episódio {str(filename)} baixado com sucesso!", Fore.GREEN)
 
     send_status_email(f"Baixou {filename}", f"Episodio {filename} baixado com sucesso!")
 
 
-def get_m3u8_url(driver):
+def get_m3u8_url(driver: ChromeWebDriver):
     """
     Parses the performance logs from the WebDriver to find the .m3u8 URL.
     """
@@ -167,21 +154,26 @@ def get_m3u8_url(driver):
     return None
 
 
-def download_m3u8_from_url(url, filename, base_folder = "D:\\Downloads\\"):
+def download_m3u8_from_url(url: str, filename: str):
     try:
         ffmpeg.input(url, bsf="aac_adtstoasc").output(
-            base_folder + filename + '.mp4', 
+            filename + '.mp4', 
             c="copy",
             map=['0:0', '0:1'],  # Explicitly select Video & Audio, ignore Data (0:2)
             bsf='a:aac_adtstoasc' # Ensures audio compatibility with MP4
         ).overwrite_output().run()
+
+        # ffmpeg.input(url).output(
+        #     filename + '.mp4', 
+        #     c="copy",
+        # ).overwrite_output().run()
     except Exception as e:
         print_status(f"Erro na conversão do FFMPEG: {e} Tentando de novo...", Fore.RED)
 
-        ffmpeg.input(url).output(base_folder + filename + '.mp4', vcodec='copy', acodec='copy').overwrite_output().run()
+        ffmpeg.input(url).output(filename + '.mp4', vcodec='copy', acodec='copy').overwrite_output().run()
 
 
-def close_all_tabs_except_current(driver):
+def close_all_tabs_except_current(driver: ChromeWebDriver):
     curr = driver.current_window_handle
 
     for handle in driver.window_handles:
@@ -191,7 +183,7 @@ def close_all_tabs_except_current(driver):
             driver.close()
 
 
-def download_episodes(episodes_url, driver):
+def download_episodes(episodes_url: list[str], driver: ChromeWebDriver, output_folder: str = "."):
     for url in episodes_url:
         episode_name = get_filename_from_url(url)
 
@@ -201,7 +193,8 @@ def download_episodes(episodes_url, driver):
             max_retries=3,
             retry_delay_sec=5,
             url=url,
-            driver=driver
+            driver=driver,
+            output_folder=output_folder
         )
 
         close_all_tabs_except_current(driver)
@@ -209,20 +202,21 @@ def download_episodes(episodes_url, driver):
 def main(episodes_url: str, output_folder: str = "."):
     print_status("Iniciando Scraper...", Fore.GREEN)
 
+    print_status(f"{len(episodes_url)} episodios encontrados:", Fore.BLUE)
+    print_status(f"Pasta de saída: {output_folder}", Fore.BLUE)
+
     print_status("Definindo Configurações...", Fore.YELLOW)
 
-    options = webdriver.FirefoxOptions()
+    options = webdriver.ChromeOptions()
 
     options.add_argument("--mute-audio")
-    options.add_argument('--headless') # Run in headless mode for no UI
-    options.add_argument('--start-maximized') # Run in maximized mode for no UI
+    # options.add_argument('--headless') # Run in headless mode for no UI
+    # options.add_argument('--start-maximized') # Run in maximized mode for no UI
 
     options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
-
-    print_status(f"{len(episodes_url)} episodios encontrados:", Fore.GREEN)
 
     print_status("Iniciando download...", Fore.YELLOW)
 
@@ -230,7 +224,7 @@ def main(episodes_url: str, output_folder: str = "."):
 
     driver.minimize_window()
 
-    download_episodes(episodes_url=episodes_url, driver=driver)
+    download_episodes(episodes_url=episodes_url, driver=driver, output_folder=output_folder)
 
     print_status("Scraper finalizado!", Fore.GREEN)
 
