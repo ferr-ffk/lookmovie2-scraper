@@ -202,7 +202,7 @@ def download_episodes(episodes_url: list[str], driver: ChromeWebDriver, output_f
 def main(episodes_url: str, output_folder: str = "."):
     print_status("Iniciando Scraper...", Fore.GREEN)
 
-    print_status(f"{len(episodes_url)} episodios encontrados:", Fore.BLUE)
+    print_status(f"{len(episodes_url)} episodio(s) encontrados.", Fore.BLUE)
     print_status(f"Pasta de saída: {output_folder}", Fore.BLUE)
 
     print_status("Definindo Configurações...", Fore.YELLOW)
