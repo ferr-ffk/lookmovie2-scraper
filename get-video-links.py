@@ -253,14 +253,22 @@ def open_seasons_episodes_tabs(driver, open_episodes_tab=True, open_seasons_tab=
 if __name__ == "__main__":
     LOGGER.setLevel(logging.ERROR)
 
+    if len(sys.argv) < 3:
+        print("Usage: python [link] [episodios.txt]")
+        sys.exit(1)
+
     try:
-        episodes_filename = "smiling-friends-episodes.txt"
+        first_episode = sys.argv[1]
+        episodes_filename = sys.argv[2]
 
         send_status_email("Iniciando scraper de 'get-video-links'...", f"Os episodios serao salvos em {episodes_filename}.")
 
-        get_episode_links("https://www.lookmovie2.to/shows/play/1701831559-smiling-friends-2020#S1-E1-159353", episodes_filename)
+        get_episode_links(first_episode, episodes_filename)
 
         send_status_email("Lista de Episodios salvos!", f"Lista de episodios salvos em \'{episodes_filename}\'.")
+    except KeyboardInterrupt:
+        print_status("Interrompido pelo usuário!", Fore.RED)
+        sys.exit(1)
     except Exception as e:
         print_status(f"Erro inesperado: {e}", Fore.RED)
 
