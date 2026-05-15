@@ -67,7 +67,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
     # options.add_argument('--start-maximized') # Run in maximized mode for no UI
     options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(2)
 
     print_status("Abrindo página inicial...", Fore.BLUE)
 
@@ -87,11 +87,11 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
 
     open_seasons_episodes_tabs(driver)
 
-    seasons_tab_initial = WebDriverWait(driver, 10).until(
+    seasons_tab_initial = WebDriverWait(driver, 5).until(
         EC.element_to_be_clickable((By.CLASS_NAME, "seasons"))
     )
 
-    episodes_tab_initial = WebDriverWait(driver, 10).until(
+    episodes_tab_initial = WebDriverWait(driver, 5).until(
         EC.element_to_be_clickable((By.CLASS_NAME, "episodes"))
     )
 
@@ -124,7 +124,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
 
 
         try:
-            seasons_tab = WebDriverWait(driver, 10).until(
+            seasons_tab = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "seasons"))
             )
         except:
@@ -132,7 +132,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
 
             open_seasons_episodes_tabs(driver, open_seasons_tab=True)
 
-            seasons_tab = WebDriverWait(driver, 10).until(
+            seasons_tab = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "seasons"))
             )        
 
@@ -140,7 +140,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
         seasons_items[season_number].click()
 
         for episode_number in range(len(episodes_items_by_current_season_selected)):
-            print_status(f"Abrindo episódio {episode_number + 1}...", Fore.BLUE)
+            print_status(f"Abrindo episódio {episode_number + 1} da temporada {season_number + 1}...", Fore.BLUE)
 
             ad_exists = check_if_ad_button_exists(driver)
 
@@ -206,7 +206,7 @@ def get_episode_links(first_episode_url, output_file="episode-links.txt"):
 
     print_status(f"{len(episode_links)} episódios encontrados!", Fore.GREEN)
 
-    print_status("Salvando links...", Fore.YELLOW)
+    print_status(f"Salvando links em {output_file}...", Fore.YELLOW)
 
     with open(output_file, 'w') as file:
         for link in episode_links:
