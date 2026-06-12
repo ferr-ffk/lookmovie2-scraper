@@ -56,7 +56,9 @@ def add_captions_to_video(input_video: str, remove_original_file: bool = False):
     result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True)
 
     # Save as an SRT file
-    srt_writer = get_writer("srt", './')
+    srt_path = Path(audio_file).parent
+
+    srt_writer = get_writer("srt", srt_path)
     srt_writer(result, audio_file)
 
     srt_file = f"{str(Path(input_video)).replace('.mp4', '.srt')}"
