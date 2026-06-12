@@ -10,15 +10,15 @@ from whisper.utils import get_writer
 
 # Extract audio using ffmpeg
 def extract_audio(input_video: str):
-    """Extrai audio de um arquivo em mp4 para um arquivo wav de mesmo nome, e retorna o nome do arquivo.
+    """Extrai audio de um arquivo em mp4 para um arquivo mp3 de mesmo nome, e retorna o nome do arquivo.
 
     Args:
         input_video (str): O arquivo de vídeo. Necessário estar formato mp4.
 
     Returns:
-        _type_: O nome do arquivo wav
+        _type_: O nome do arquivo mp3
     """
-    output_audio = f"{input_video.replace('.mp4', '.wav')}"
+    output_audio = f"{input_video.replace('.mp4', '.mp3')}"
     
     print_status(f"Extraindo áudio do vídeo {input_video}...", Fore.YELLOW)
     ffmpeg.input(input_video).output(output_audio, loglevel="error").run(overwrite_output=True)
@@ -28,10 +28,10 @@ def extract_audio(input_video: str):
     return output_audio
 
 def transcribe_to_srt(audio_file: str):
-    """Transcreve as legendas para um determinado arquivo WAV.
+    """Transcreve as legendas para um determinado arquivo mp3.
 
     Args:
-        audio_file (str): O caminho do arquivo WAV a ser transcrito
+        audio_file (str): O caminho do arquivo mp3 a ser transcrito
 
     Returns:
         str: O caminho do novo arquivo SRT
@@ -46,7 +46,7 @@ def transcribe_to_srt(audio_file: str):
     srt_writer = get_writer("srt", srt_path)
     srt_writer(result, audio_file)
 
-    srt_file = f"{str(Path(audio_file)).replace('.wav', '.srt')}"
+    srt_file = f"{str(Path(audio_file)).replace('.mp3', '.srt')}"
 
     return srt_file
 
