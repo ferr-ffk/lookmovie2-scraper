@@ -27,6 +27,30 @@ def extract_audio(input_video: str):
     
     return output_audio
 
+def transcribe_to_srt(audio_file: str):
+    """Transcreve as legendas para um determinado arquivo WAV.
+
+    Args:
+        audio_file (str): O caminho do arquivo WAV a ser transcrito
+
+    Returns:
+        str: O caminho do novo arquivo SRT
+    """
+
+    model = whisper.load_model("small")
+    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True)
+
+    # Save as an SRT file
+    srt_path = Path(audio_file).parent
+
+    srt_writer = get_writer("srt", srt_path)
+    srt_writer(result, audio_file)
+
+    srt_file = f"{str(Path(audio_file)).replace('.wav', '.srt')}"
+
+    return srt_file
+
+
 def add_captions_to_video(input_video: str, remove_original_file: bool = False):
     """
     Adiciona legendas a um vídeo MP4 usando o Whisper para transcrever o áudio.
@@ -42,7 +66,6 @@ def add_captions_to_video(input_video: str, remove_original_file: bool = False):
 
     # Carregar o modelo Whisper
     print_status("Carregando o modelo Whisper...", Fore.BLUE)
-    model = whisper.load_model("small")
     print_status("Modelo carregado com sucesso!", Fore.GREEN)
     
     print_status("Iniciando a extração de áudio e transcrição...", Fore.YELLOW)
@@ -53,15 +76,8 @@ def add_captions_to_video(input_video: str, remove_original_file: bool = False):
     
     print_status(f"Transcrevendo áudio do vídeo {output_video}...", Fore.YELLOW)
     
-    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True)
-
-    # Save as an SRT file
-    srt_path = Path(audio_file).parent
-
-    srt_writer = get_writer("srt", srt_path)
-    srt_writer(result, audio_file)
-
-    srt_file = f"{str(Path(input_video)).replace('.mp4', '.srt')}"
+    srt_file = transcribe_to_srt(audio_file)
+    
     print_status(f"Legendas salvas em: {srt_file}", Fore.GREEN)
 
     print_status("Adicionar legenda ao vídeo...", Fore.YELLOW)
