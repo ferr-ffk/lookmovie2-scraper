@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import smtplib
 import sys
 from typing import Any, Callable
@@ -112,6 +113,20 @@ def print_status(message, status=Fore.GREEN):
         symbol = "[i]" + " "
 
     print(f"{symbol}{status}{message}{Style.RESET_ALL}")
+
+
+def highlight_text(text, status=Fore.GREEN):
+    return f"{status}`{text}`{Style.RESET_ALL}"
+
+
+def safe_remove_file(filepath):
+    """Remove arquivo se existir"""
+    try:
+        file_path = Path(filepath)
+        if file_path.exists():
+            file_path.unlink()
+    except OSError as e:
+        print(f"Aviso: Não foi possível remover {filepath}: {e}")
 
 
 if __name__ == "__main__":
