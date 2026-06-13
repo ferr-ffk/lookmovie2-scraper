@@ -3,9 +3,11 @@ import sys
 from colorama import Fore
 import ffmpeg
 
-from util import highlight_text, print_status, safe_remove_file
+from util import format_time, highlight_text, print_status, safe_remove_file
 import whisper
 from whisper.utils import get_writer
+
+from faster_whisper import WhisperModel
 
 
 # Extract audio using ffmpeg
@@ -36,9 +38,13 @@ def transcribe_to_srt(audio_file: str):
     Returns:
         str: O caminho do novo arquivo SRT
     """
+    print_status("Carregando o modelo Whisper...", Fore.BLUE)
 
     model = whisper.load_model("small")
-    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True)
+
+    print_status("Modelo carregado com sucesso!", Fore.GREEN)
+
+    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True, language="en")
 
     # Save as an SRT file
     srt_path = Path(audio_file).parent
@@ -47,6 +53,31 @@ def transcribe_to_srt(audio_file: str):
     srt_writer(result, audio_file)
 
     srt_file = f"{str(Path(audio_file)).replace('.mp3', '.srt')}"
+
+    return srt_file
+
+
+def transcribe_to_srt_faster(audio_file: str):
+    model = WhisperModel("small", device="cpu")
+
+    segments, info = model.transcribe(audio_file, beam_size=5)
+
+    print(f"Detected language '{info.language}' with probability {info.language_probability:.2f}")
+
+    srt_file = f"{(str(Path(audio_file))).replace('.mp3', '.srt')}"
+
+    with open(srt_file, 'w', encoding='utf-8') as srt_file_write:
+        for segment in segments:
+            start_time = format_time(segment.start)
+            end_time = format_time(segment.end)
+
+            segment_id = segment.id + 1
+
+            line_out = f"{segment_id}\n{start_time} --> {end_time}\n{segment.text.lstrip()}\n\n"
+
+            print(line_out)
+            srt_file_write.write(f"{segment_id}\n{start_time} --> {end_time}\n{segment.text.lstrip()}\n\n")
+            srt_file_write.flush()  # i flush the file buffer so i don't lose data if it crashes midway
 
     return srt_file
 
@@ -65,12 +96,9 @@ def add_captions_to_video(input_video: str, remove_original_file: bool = False):
     output_video = input_video.replace('.mp4', '.mkv')
 
     # Carregar o modelo Whisper
-    print_status("Carregando o modelo Whisper...", Fore.BLUE)
-    print_status("Modelo carregado com sucesso!", Fore.GREEN)
-    
     print_status("Iniciando a extração de áudio e transcrição...", Fore.YELLOW)
 
-    print_status(f"Processando vídeo do vídeo: {output_video}", Fore.CYAN)
+    print_status(f"Arquivo original: '{input_video}'; processando vídeo para o arquivo final: {output_video}", Fore.CYAN)
     
     audio_file = extract_audio(input_video)
     
@@ -85,14 +113,16 @@ def add_captions_to_video(input_video: str, remove_original_file: bool = False):
     video_in = ffmpeg.input(input_video)
     srt_in = ffmpeg.input(srt_file)
 
-    ffmpeg.\
+    output_node = ffmpeg.\
         output(
             video_in['v'],       # Select original video stream
             video_in['a'],       # Select original audio stream
             srt_in['s'],         # Select subtitle stream
             output_video,
             c='copy',            # Stream copy for fast execution
-            **{'c:s': 'ass', 'metadata:s:s:0': 'language=eng'}).run(overwrite_output=True)
+            **{'c:s': 'ass', 'metadata:s:s': 'language=eng'})
+
+    ffmpeg.run(output_node, overwrite_output=True)
 
     print(f"Arquivo final MKV com legendas e áudio original salvo como: {highlight_text(output_video, Fore.GREEN)}")
     

@@ -129,5 +129,11 @@ def safe_remove_file(filepath):
         print(f"Aviso: Não foi possível remover {filepath}: {e}")
 
 
+def format_time(seconds):
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    milliseconds = (seconds - int(seconds)) * 1000
+    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d},{int(milliseconds):03d}"
+
 if __name__ == "__main__":
     send_status_email("TITULO", "oie td bem olha oq aconteceu foi o seguinte")
