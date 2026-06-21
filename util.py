@@ -112,7 +112,7 @@ def print_status(message, status=Fore.GREEN):
     else:
         symbol = "[i]" + " "
 
-    print(f"{symbol}{status}{message}{Style.RESET_ALL}")
+    print(f"{status}{symbol}{message}{Style.RESET_ALL}")
 
 
 def highlight_text(text, status=Fore.GREEN):
