@@ -237,7 +237,7 @@ if __name__ == "__main__":
     output_folder = ""
 
     if len(sys.argv) < 3:
-        print("Usage: python [link || links.txt] [output_folder]")
+        print("Usage: python scraper.py [link || links.txt] [output_folder]")
         sys.exit(1)
 
     if sys.argv[1] and sys.argv[2]:

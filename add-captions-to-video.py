@@ -44,7 +44,7 @@ def transcribe_to_srt(audio_file: str):
 
     print_status("Modelo carregado com sucesso!", Fore.GREEN)
 
-    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True, language="en")
+    result = model.transcribe(audio_file, verbose=True, fp16=False, word_timestamps=True)
 
     # Save as an SRT file
     srt_path = Path(audio_file).parent
