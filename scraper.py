@@ -30,9 +30,8 @@ def close_ad_button_if_exists(driver):
     except:
         print_status("Click interceptado....", Fore.RED)
 
-        close_ad_button_if_exists(driver)
-
-        raise Exception("Não foi possível encontrar o botão de fechar anúncio!")
+        print_status("Não foi possível encontrar o botão de fechar anúncio!", Fore.YELLOW)
+        print_status("Assume-se que não há anúncios para serem fechados e o código possa prosseguir normalmente...", Fore.BLUE)
 
 
 def close_popup_if_exists(driver: ChromeWebDriver):
